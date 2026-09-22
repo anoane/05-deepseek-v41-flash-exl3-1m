@@ -1721,3 +1721,19 @@ would mean the flags took but the parser did not match the template — a differ
   wo_a reconstructed: 40 layers; compressor fused: 4 ; GPU KV cache size: 1,797,989 tokens
   gpu0 93,534 MiB 52 C | CMP 60,022 MiB 48 C
 **/root/ds41/p24_boot.sh is now the canonical launcher** (p23 = no tool calls, p22 = no CMP tier).
+
+### Correction (2026-09-22): the Blackwell H2D figure
+
+Entries above use ~42 GB/s for host-to-device over the RTX PRO 6000's Gen5 x16 link. That
+number did not reproduce. Measured idle-gated (service at `Running: 0` / `Waiting: 0`), three
+trials per size:
+
+    pinned   H2D   16-256 MiB transfers    56-57 GB/s
+    pinned   H2D   1-2 GiB transfers       49-54 GB/s
+    pinned   H2D   <=1 MiB transfers       29-32 GB/s   per-copy overhead dominates
+    pinned   H2D   2-8 MiB transfers       32-52 GB/s   unstable run to run
+    pageable H2D   any size                31-33 GB/s
+
+No mode or size gives a stable 42; it is most plausibly one sample from the unstable 2-8 MiB
+band. The FIX J reasoning is unaffected: 527 GB/s local exl3 weight reads against at most
+~56 GB/s across the link is still roughly a 10x gap. The entries above are left as written.

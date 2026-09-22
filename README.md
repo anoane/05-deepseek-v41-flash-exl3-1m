@@ -27,7 +27,7 @@ SSD                           189 GiB of engram tables, never resident
 | Host | Proxmox VE 9.2.x, kernel 7.0.x-pve, Secure Boot **disabled** |
 | CPU | AMD Ryzen 9 9950X3D (16C/32T) — 24 vCPU passed to the guest |
 | RAM | 160 GiB DDR5 allocated to the guest (157 GiB usable) — **no swap, deliberately** |
-| GPU 0 | NVIDIA RTX PRO 6000 Blackwell Workstation — 97,887 MiB, `sm_120`, `10de:2bb1`, PCIe Gen5 x16 (~42 GB/s H2D measured), 400 W default limit / 600 W max |
+| GPU 0 | NVIDIA RTX PRO 6000 Blackwell Workstation — 97,887 MiB, `sm_120`, `10de:2bb1`, PCIe Gen5 x16 (H2D measured: ~56 GB/s pinned, ~33 GB/s pageable), 400 W default limit / 600 W max |
 | GPU 1 | NVIDIA CMP 170HX — 65,536 MiB after the [cmpunlocker](https://github.com/amoghmunikote/cmpunlocker) unlock (8 GB stock), `sm_80` (GA100), `10de:20c2`, 200 W default limit / 250 W max. The unlocked card does **Gen2 x16** (tested in the x16 slot); in *this* build it occupies a PCIe 3.0 **x1** slot, so the link runs **Gen2 x1, ~0.38 GB/s** — see repo 01 §5 |
 | Guest | Ubuntu 24.04.4 LTS, kernel 6.8.0-139-generic, NVIDIA driver 610.43.02 |
 | Storage | 5.8 TB NVMe (~93 GB free with all packs resident) |
@@ -131,7 +131,7 @@ reasons:
 
 **The blocker is attention, not the MoE GEMM.** Experts are exl3 GEMMs, and those run correctly
 on `sm_80` — measured at `mean_rel_err 0.00057` and **527 GB/s** effective weight read, versus
-~42 GB/s streaming the same weights from host. So fix **J** moves expert *weights* only;
+at most ~56 GB/s streaming the same weights from host over the Gen5 link. So fix **J** moves expert *weights* only;
 attention, indexer, compressor, engram and head all stay on the Blackwell, and only
 *activations* cross the ×1 link — 0.082 ms per token, round trip.
 
